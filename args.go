@@ -12,9 +12,9 @@ const (
 	DATE = "date"
 )
 
-// Struct Arguments contains values of each argument. Arguments with empty values are
+// Struct RequiredArgs contains values of each argument. RequiredArguments with empty values are
 // considered as not passed.
-type Arguments struct {
+type RequiredArgs struct {
 	dataFilePath string
 	activity string
 	time string
@@ -22,11 +22,11 @@ type Arguments struct {
 }
 
 // ParseArgs function parses an array of argument strings and returns a new instance
-// of Arguments struct type with correct values.
+// of RequiredArgs struct type with correct values.
 // The function returns an error if the arguments are not passed properly.
-func ParseArgs(args []string) (*Arguments, error) {
+func ParseArgs(args []string) (*RequiredArgs, error) {
 	var argName string
-	a := &Arguments{}
+	a := &RequiredArgs{}
 
 	for i := 1; i < len(args); {
 		arg := args[i]
@@ -54,17 +54,22 @@ func ParseArgs(args []string) (*Arguments, error) {
 		}
 	}
 
+	err := checkRequiredArgsPassed(a)
+	if (err != nil) {
+		return nil, err
+	}
+
 	return a, nil
 }
 
 // The function setArgVal assigns the value of an argument specified by a given argName
-// to the corresponding field of a given Arguments type instance. 
+// to the corresponding field of a given RequiredArgs type instance. 
 // The function returns the updated index for the given args array, which is an array of 
 // raw argument values similar to os.Args.
 // The function returns an error if:
 //   - the format of the argument name is incorrect or the arg name doesn't exist.
 //   - the argument value is empty or doesn't exist.
-func setArgVal(a *Arguments, argName string, argIndex int, args []string, fullArg bool) (int, error) {
+func setArgVal(a *RequiredArgs, argName string, argIndex int, args []string, fullArg bool) (int, error) {
 	if fullArg {
 		return setFullArgVal(a, argName, argIndex, args)
 	}
@@ -72,7 +77,7 @@ func setArgVal(a *Arguments, argName string, argIndex int, args []string, fullAr
 	return setShortArgVal(a, argName, argIndex, args)
 }
 
-func setFullArgVal(a *Arguments, argName string, argIndex int, args []string) (int, error) {
+func setFullArgVal(a *RequiredArgs, argName string, argIndex int, args []string) (int, error) {
 	if len(argName) == 0 {
 		return argIndex, fmt.Errorf("No argument name specified after --")
 	}
@@ -96,7 +101,7 @@ func setFullArgVal(a *Arguments, argName string, argIndex int, args []string) (i
 	return argIndex, fmt.Errorf("Argument '" + argName + "' not found")
 }
 
-func setShortArgVal(a *Arguments, argName string, argIndex int, args []string) (int, error) {
+func setShortArgVal(a *RequiredArgs, argName string, argIndex int, args []string) (int, error) {
 	if len(argName) == 0 {
 		return argIndex, fmt.Errorf("No argument name specified after -")
 	}
@@ -112,7 +117,7 @@ func setShortArgVal(a *Arguments, argName string, argIndex int, args []string) (
 }
 
 // Returns an error if the filepath is empty
-func setDataFilePathVal(a *Arguments, fPath string) error {
+func setDataFilePathVal(a *RequiredArgs, fPath string) error {
 	if len(fPath) == 0 {
 		return fmt.Errorf("The data filepath can't be empty")
 	}
@@ -123,7 +128,7 @@ func setDataFilePathVal(a *Arguments, fPath string) error {
 }
 
 // Returns an error if the activity name is empty.
-func setActivityVal(a *Arguments, actName string) error {
+func setActivityVal(a *RequiredArgs, actName string) error {
 	if len(actName) == 0 {
 		return fmt.Errorf("The activity name can't be empty")
 	}
@@ -134,30 +139,47 @@ func setActivityVal(a *Arguments, actName string) error {
 }
 
 // Returns an error if the time is of incorrect format
-func setTimeVal(a *Arguments, t string) error {
+func setTimeVal(a *RequiredArgs, t string) error {
 	return a.SetTime(t)
 }
 
-func setDateVal(a *Arguments, d string) error {
+func setDateVal(a *RequiredArgs, d string) error {
 	return a.SetDate(d)
 }
 
+func checkRequiredArgsPassed(a *RequiredArgs) error {
+	if len(a.dataFilePath) == 0 {
+		return fmt.Errorf("Data storage file path is not set. Use --path or -p flags for that.")
+	}
+	if len(a.activity) == 0 {
+		return fmt.Errorf("Activity name is not set. Use --activity flag for that.")
+	}
+	if len(a.time) == 0 {
+		return fmt.Errorf("Time is not set. Use --time flag for that.")
+	}
+	if len(a.date) == 0 {
+		return fmt.Errorf("Date is not set. Use --date flag for that.")
+	}
+
+	return nil
+}
+
 // SETTERS
-func (a *Arguments) SetDataFilePath(fPath string) {
+func (a *RequiredArgs) SetDataFilePath(fPath string) {
 	a.dataFilePath = fPath
 }
 
-func (a *Arguments) SetActivity(act string) {
+func (a *RequiredArgs) SetActivity(act string) {
 	a.activity = act
 }
 
-func (a *Arguments) SetTime(t string) error {
+func (a *RequiredArgs) SetTime(t string) error {
 	// TODO: Test the time format
 	a.time = t
 	return nil
 }
 
-func (a *Arguments) SetDate(d string) error {
+func (a *RequiredArgs) SetDate(d string) error {
 	// TODO: Test the date format
 	a.date = d
 	return nil
