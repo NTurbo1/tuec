@@ -6,10 +6,16 @@ import (
 )
 
 func main() {
-	args := os.Args
-	
-	if len(args) < 2 {
-		panic("Not enough args")
+	args := PrepArgs(os.Args)
+
+	isHelp, err := CheckForHelp(args)
+	if err != nil {
+		fmt.Println("[ERROR] " + err.Error())
+		os.Exit(1)
+	}
+	if isHelp {
+		fmt.Println(HelpText)
+		return
 	}
 
 	arguments, err := ParseArgs(args);

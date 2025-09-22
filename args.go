@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 const (
@@ -10,7 +11,11 @@ const (
 	ACTIVITY = "activity"
 	TIME = "time"
 	DATE = "date"
+	HELP = "help"
+	H = "h" // short version of help
 )
+
+const hyphenAscii byte = 45 
 
 // Struct RequiredArgs contains values of each argument. RequiredArguments with empty values are
 // considered as not passed.
@@ -23,6 +28,16 @@ type RequiredArgs struct {
 
 func (ra *RequiredArgs) String() string {
 	return ra.date + "," + ra.time + "," + ra.activity
+}
+
+// Function PrepArgs returns a new slice without the first element of the args slice, which is
+// the filename.
+func PrepArgs(args []string) []string {
+	if len(args) == 0 || len(args) == 1 {
+		return []string{}
+	}
+
+	return args[1:]
 }
 
 // ParseArgs function parses an array of argument strings and returns a new instance
@@ -40,8 +55,8 @@ func ParseArgs(args []string) (*RequiredArgs, error) {
 		}
 
 		fullArg := true
-		if arg[0] == 45 { // 45 is the ascii/UTF-8 code for '-'
-			if arg[1] == 45 {
+		if arg[0] == hyphenAscii {
+			if arg[1] == hyphenAscii {
 				argName = arg[2:]
 			} else {
 				fullArg = false
@@ -64,6 +79,38 @@ func ParseArgs(args []string) (*RequiredArgs, error) {
 	}
 
 	return a, nil
+}
+
+// Function checkForHelp returns true if the help text should be printed out and false
+// otherwise. It also returns an error if the arguments are of incorrect or unknown 
+// format.
+func CheckForHelp(args []string) (bool, error) {
+	if len(args) == 0 {
+		return true, nil
+	}
+
+	firstArg := args[0]
+	if firstArg[0] == hyphenAscii {
+		if len(firstArg) == 1 {
+			return true, nil
+		}
+
+		if firstArg[1] == hyphenAscii {
+			if strings.Compare(firstArg[2:], HELP) == 0 {
+				return true, nil
+			}
+
+			return false, nil
+		}
+
+		if strings.Compare(firstArg[1:], H) == 0 {
+			return true, nil
+		}
+
+		return false, nil
+	}
+
+	return false, fmt.Errorf("Unknown command %s", firstArg)
 }
 
 // The function setArgVal assigns the value of an argument specified by a given argName
