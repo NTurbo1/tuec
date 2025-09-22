@@ -21,6 +21,10 @@ type RequiredArgs struct {
 	date string
 }
 
+func (ra *RequiredArgs) String() string {
+	return ra.date + "," + ra.time + "," + ra.activity
+}
+
 // ParseArgs function parses an array of argument strings and returns a new instance
 // of RequiredArgs struct type with correct values.
 // The function returns an error if the arguments are not passed properly.

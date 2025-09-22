@@ -19,4 +19,9 @@ func main() {
 	}
 
 	fmt.Println(arguments)
+	err = AddRow(arguments)
+	if err != nil {
+		fmt.Println("[ERROR] " + err.Error())
+		os.Exit(1)
+	}
 }
